@@ -24,9 +24,13 @@
         <div class="level-item has-text-centered">
             <div>
                 <p class="heading">使用流量：</p>
-                <p class="title">
-                    <code>{{ user.user_ss_config.human_used_traffic }}</code>
-                </p>
+                <p class="title">{{ user.human_used_traffic }}</p>
+            </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">在线设备：</p>
+                <p class="title">{{ online_device_count }}</p>
             </div>
         </div>
     </nav>
@@ -37,7 +41,7 @@
                 <div class="select">
                     <select id="id-select-nodes" name="nodes">
                         {% for node in node_list %}
-                        <option value={{ node.node_id }}>{{ node.name }}</option>
+                        <option node-id={{ node.id }}>{{ node.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -56,10 +60,10 @@
         url = "{% url 'api:user_traffic_chart' %}"
         var options = $("#id-select-nodes option:selected")
         var data = {
-            'node_id': options.val(),
+            'node_id': options.attr("node-id"),
         }
         $.get(url, data, function (results) {
-            genLineChart('traffic', results)
+            genChart('traffic', 'line', results)
         })
     }
     queryButton.click(traffic_query)

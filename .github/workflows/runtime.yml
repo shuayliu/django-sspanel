@@ -1,0 +1,26 @@
+name: runtime
+on:
+  push:
+    branches:
+      - build
+jobs:
+  build-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: build runtime image
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ehco1996/django-sspanel
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tags: "runtime"
+          dockerfile: Dockerfile
+      - name: build nginx imgae
+        uses: elgohr/Publish-Docker-Github-Action@master
+        with:
+          name: ehco1996/django-sspanel
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          tags: "nginx"
+          dockerfile: Dockerfile.NGINX

@@ -2,15 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.forms import ModelForm
 
-from apps.encoder import encoder
-from apps.sspanel.models import (
-    Announcement,
-    Goods,
-    InviteCode,
-    User,
-    SSNode,
-    UserSSConfig,
-)
+from apps.sspanel.models import Announcement, Goods, InviteCode, User
 
 
 class RegisterForm(UserCreationForm):
@@ -52,6 +44,9 @@ class RegisterForm(UserCreationForm):
         super().__init__(*args, **kw)
         if "ref" in self.data or "ref" in self.initial.keys():
             self.fields.pop("invitecode")
+            self.fields["ref"].label = "not show"
+            self.fields["ref"].help_text = None
+            self.fields["ref"].widget = forms.HiddenInput()
         else:
             self.fields.pop("ref")
 
@@ -85,7 +80,7 @@ class RegisterForm(UserCreationForm):
     def _clean_ref(self):
         ref = self.cleaned_data.get("ref")
         try:
-            user_id = encoder.string2int(ref)
+            user_id = int(ref)
         except ValueError:
             raise forms.ValidationError("ref不正确")
 
@@ -102,7 +97,7 @@ class RegisterForm(UserCreationForm):
 class LoginForm(forms.Form):
     username = forms.CharField(
         required=True,
-        label=u"用户名",
+        label="用户名",
         error_messages={"required": "请输入用户名"},
         widget=forms.TextInput(
             attrs={"class": "input is-primary", "placeholder": "用户名"}
@@ -110,8 +105,8 @@ class LoginForm(forms.Form):
     )
     password = forms.CharField(
         required=True,
-        label=u"密码",
-        error_messages={"required": u"请输入密码"},
+        label="密码",
+        error_messages={"required": "请输入密码"},
         widget=forms.PasswordInput(
             attrs={"class": "input is-primary", "placeholder": "密码", "type": "password"}
         ),
@@ -119,28 +114,9 @@ class LoginForm(forms.Form):
 
     def clean(self):
         if not self.is_valid():
-            raise forms.ValidationError(u"用户名和密码为必填项")
+            raise forms.ValidationError("用户名和密码为必填项")
         else:
             self.cleaned_data = super(LoginForm, self).clean()
-
-
-class SSNodeForm(ModelForm):
-    class Meta:
-        model = SSNode
-        fields = "__all__"
-        widgets = {
-            "node_id": forms.NumberInput(attrs={"class": "input"}),
-            "level": forms.NumberInput(attrs={"class": "input"}),
-            "name": forms.TextInput(attrs={"class": "input"}),
-            "info": forms.TextInput(attrs={"class": "input"}),
-            "server": forms.TextInput(attrs={"class": "input"}),
-            "method": forms.Select(attrs={"class": "input"}),
-            "country": forms.Select(attrs={"class": "input"}),
-            "used_traffic": forms.NumberInput(attrs={"class": "input"}),
-            "total_traffic": forms.NumberInput(attrs={"class": "input"}),
-            "enable": forms.CheckboxInput(attrs={"class": "checkbox"}),
-            "custom_method": forms.CheckboxInput(attrs={"class": "checkbox"}),
-        }
 
 
 class GoodsForm(ModelForm):
@@ -158,22 +134,17 @@ class AnnoForm(ModelForm):
 class UserForm(ModelForm):
     class Meta:
         model = User
-        fields = ["balance", "level", "level_expire_time"]
+        fields = [
+            "balance",
+            "level",
+            "level_expire_time",
+            "ss_port",
+            "ss_password",
+        ]
         widgets = {
             "balance": forms.NumberInput(attrs={"class": "input"}),
             "level": forms.NumberInput(attrs={"class": "input"}),
             "level_expire_time": forms.DateTimeInput(attrs={"class": "input"}),
-        }
-
-
-class UserSSConfigForm(ModelForm):
-    class Meta:
-        model = UserSSConfig
-        fields = ["port", "password", "speed_limit", "method", "enable"]
-        widgets = {
-            "port": forms.NumberInput(attrs={"class": "input"}),
-            "speed_limit": forms.NumberInput(attrs={"class": "input"}),
-            "password": forms.TextInput(attrs={"class": "input"}),
-            "method": forms.Select(attrs={"class": "input"}),
-            "enable": forms.CheckboxInput(attrs={"class": "checkbox"}),
+            "ss_port": forms.NumberInput(attrs={"class": "input"}),
+            "ss_password": forms.TextInput(attrs={"class": "input"}),
         }
